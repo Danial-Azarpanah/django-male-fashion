@@ -29,6 +29,7 @@ INSTALLED_APPS = [
 
     # local
     'home.apps.HomeConfig',
+    'account.apps.AccountConfig',
 ]
 
 MIDDLEWARE = [
@@ -112,8 +113,11 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [
     path.join(BASE_DIR, "static")
 ]
+MEDIA_URL = "media/"
+MEDIA_ROOT = path.join(BASE_DIR, "media")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+AUTH_USER_MODEL = 'account.User'
