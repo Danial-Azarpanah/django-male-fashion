@@ -11,7 +11,9 @@ class UserRegisterForm(forms.ModelForm):
     A form for creating new users. Includes all the required
     fields, plus a repeated password.
     """
-    email = forms.EmailField(widget=forms.EmailInput(attrs={'placeholder': 'Email',
+    phone = forms.CharField(widget=forms.TextInput(attrs={'placeholder': 'Phone Number',
+                                                            'class': 'input100'}))
+    full_name = forms.CharField(widget=forms.TextInput(attrs={'placeholder': 'Full Name',
                                                             'class': 'input100'}))
     password = forms.CharField(widget=forms.PasswordInput(attrs={'placeholder': 'Password',
                                                                  'class': 'input100'}))
@@ -20,29 +22,21 @@ class UserRegisterForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ["email", "password"]
+        fields = ["phone", "full_name", "password"]
 
     def clean(self):
-        # Check if the passwords are same
+        # Check if the phone number isn't already registered
+        phone = self.cleaned_data.get("phone")
+        if User.objects.filter(phone=phone).exists():
+            raise ValidationError("This phone number is already taken!", "already_used_phone")
+
+        # Check if the passwords are same and longer than 8 characters
         password1 = self.cleaned_data.get("password")
         password2 = self.cleaned_data.get("password2")
-
+        if len(password1) < 8:
+            raise ValidationError('Password length should be more than 8 characters', 'short_password')
         if password1 != password2:
             raise ValidationError("Passwords don't match", "password_mismatch")
-
-    def clean_password(self):
-        # Check whether length of password is equal or larger than 8 characters
-        password = self.cleaned_data.get("password")
-        if len(password) < 8:
-            raise ValidationError('Password length should be more than 8 characters', 'short_password')
-        return password
-
-    def clean_email(self):
-        # Check that the email for registration is not already taken
-        email = self.cleaned_data.get('email')
-        if User.objects.filter(email=email).exists():
-            raise ValidationError("This email address is already taken", 'email_taken')
-        return email
 
     def save(self, commit=True):
         # Save the provided password in hashed format
@@ -51,6 +45,17 @@ class UserRegisterForm(forms.ModelForm):
         if commit:
             user.save()
         return user
+
+
+class CheckOtpForm(forms.Form):
+    """
+    Form for saving temporary user info
+    for creating his/her account after
+    confirming the OTP code
+    """
+    code = forms.CharField(widget=forms.TextInput(attrs=
+                                                  {"placeholder": "Enter 6 digit code",
+                                                   "class": "input100"}))
 
 
 class UserLoginForm(AuthenticationForm):

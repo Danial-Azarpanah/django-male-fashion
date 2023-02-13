@@ -36,52 +36,27 @@
 
                 {% csrf_token %}
                 <span class="login100-form-title">
-						Sign Up
-                </span>
+						Enter code
+					</span>
+
+                <div class="text-center m-t-1 m-b-1 alert-danger"
+                     style="border-radius: 12px">
+                    {{ form.code.errors }}
+                </div>
+
+                <div class="wrap-input100 validate-input m-b-16" data-validate="Please enter email">
+                    {{ form.code }}
+                    <span class="focus-input100"></span>
+                </div>
 
                 {% if form.non_field_errors %}
                     {% for error in form.non_field_errors %}
-                        <div class="text-center m-t-1 m-b-4 alert-danger"
+                        <div class="text-center m-t-1 m-b-1 alert-danger"
                              style="border-radius: 12px">
                             {{ error }}
                         </div>
                     {% endfor %}
                 {% endif %}
-
-                <div class="text-center m-t-1 m-b-1 alert-danger"
-                     style="border-radius: 12px">
-                    {{ form.phone.errors }}
-                </div>
-
-                <div class="wrap-input100 validate-input m-b-16" data-validate="Please enter phone">
-                    {{ form.phone }}
-                    <span class="focus-input100"></span>
-                </div>
-
-                <div class="text-center m-t-1 m-b-1 alert-danger"
-                     style="border-radius: 12px">
-                    {{ form.full_name.errors }}
-                </div>
-
-                <div class="wrap-input100 validate-input m-b-16" data-validate="Please enter email">
-                    {{ form.full_name }}
-                    <span class="focus-input100"></span>
-                </div>
-
-                <div class="text-center m-t-1 m-b-1 alert-danger"
-                     style="border-radius: 12px">
-                    {{ form.password.errors }}
-                </div>
-
-                <div class="wrap-input100 validate-input m-b-16" data-validate="Please enter password">
-                    {{ form.password }}
-                    <span class="focus-input100"></span>
-                </div>
-
-                <div class="wrap-input100 validate-input" data-validate="Please confirm password">
-                    {{ form.password2 }}
-                    <span class="focus-input100"></span>
-                </div>
 
                 <div class="text-right p-b-23">
                     <a href="#" class="txt2 form-link">
