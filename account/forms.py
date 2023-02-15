@@ -1,6 +1,6 @@
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
-from django.contrib.auth.forms import AuthenticationForm
 from django.core.validators import ValidationError
+from django.db.models import Q
 from django import forms
 
 from .models import User
@@ -12,9 +12,9 @@ class UserRegisterForm(forms.ModelForm):
     fields, plus a repeated password.
     """
     phone = forms.CharField(widget=forms.TextInput(attrs={'placeholder': 'Phone Number',
-                                                            'class': 'input100'}))
+                                                          'class': 'input100'}))
     full_name = forms.CharField(widget=forms.TextInput(attrs={'placeholder': 'Full Name',
-                                                            'class': 'input100'}))
+                                                              'class': 'input100'}))
     password = forms.CharField(widget=forms.PasswordInput(attrs={'placeholder': 'Password',
                                                                  'class': 'input100'}))
     password2 = forms.CharField(widget=forms.PasswordInput(attrs={'placeholder': 'Confirm Password',
@@ -58,14 +58,21 @@ class CheckOtpForm(forms.Form):
                                                    "class": "input100"}))
 
 
-class UserLoginForm(AuthenticationForm):
+class UserLoginForm(forms.Form):
     """
     The form for user login process
+    using either email or phone number
     """
-    username = forms.EmailField(widget=forms.EmailInput(attrs={'placeholder': 'Email',
-                                                               'class': 'input100'}))
+    username = forms.CharField(widget=forms.TextInput(attrs={'placeholder': 'Email or Phone',
+                                                             'class': 'input100'}))
     password = forms.CharField(widget=forms.PasswordInput(attrs={'placeholder': 'Password',
                                                                  'class': 'input100'}))
+
+    def clean(self):
+        # Check if there is a user with matching email/phone number
+        username = self.cleaned_data.get("username")
+        if not User.objects.filter(Q(phone=username) | Q(email=username)).exists():
+            raise ValidationError("No such user available!", "user_not_found")
 
 
 class UserChangeForm(forms.ModelForm):

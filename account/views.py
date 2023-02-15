@@ -1,7 +1,6 @@
 import random
 from uuid import uuid4
 
-from django.contrib.auth.views import LoginView
 from django.shortcuts import redirect, render
 from django.contrib.auth import login
 from django.urls import reverse_lazy
@@ -9,20 +8,8 @@ from django.utils import timezone
 from django.views import View
 
 from .forms import UserRegisterForm, UserLoginForm, CheckOtpForm
+from .authentication import CustomBackend
 from .models import User, OTP
-
-
-class UserLogin(LoginView):
-    """
-    View for user login
-    """
-    template_name = "account/login.html"
-    redirect_authenticated_user = True
-    fields = "__all__"
-    form_class = UserLoginForm
-
-    def get_success_url(self):
-        return reverse_lazy("home:main")
 
 
 class UserRegister(View):
@@ -95,6 +82,36 @@ class CheckOtp(View):
             otp.delete()
             form.add_error("code", "The code has expired!")
         return render(request, "account/check_otp.html", {"form": form})
+
+
+class UserLogin(View):
+    """
+    View for user login
+    using either phone number
+    or email
+    """
+    def get(self, request):
+        if request.user.is_authenticated:
+            return redirect("home:main")
+        form = UserLoginForm
+        return render(request, "account/login.html", {"form": form})
+
+    def post(self, request):
+        form = UserLoginForm(request.POST)
+        if form.is_valid():
+            cd = form.cleaned_data
+            username = cd.get("username")
+            password = cd.get("password")
+
+            user = CustomBackend.authenticate(request, username, password)
+
+            if user:
+                login(request, user, backend="django.contrib.auth.backends.ModelBackend")
+                return redirect("home:main")
+            else:
+                form.add_error("password", "Password incorrect!")
+                return render(request, "account/login.html", {"form": form})
+        return render(request, "account/login.html", {"form": form})
 
 
 
