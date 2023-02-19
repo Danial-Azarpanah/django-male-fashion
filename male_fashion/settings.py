@@ -126,3 +126,4 @@ AUTHENTICATION_BACKENDS = [
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'account.User'
+TEMPLATE_CONTEXT_PROCESSORS = "django.contrib.messages.context_processors.messages"

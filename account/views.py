@@ -4,10 +4,11 @@ from uuid import uuid4
 from django.shortcuts import redirect, render
 from django.contrib.auth import login
 from django.urls import reverse_lazy
+from django.contrib import messages
 from django.utils import timezone
 from django.views import View
 
-from .forms import UserRegisterForm, UserLoginForm, CheckOtpForm
+from .forms import UserRegisterForm, UserLoginForm, CheckOtpForm, UserProfileForm
 from .authentication import CustomBackend
 from .models import User, OTP
 
@@ -112,6 +113,31 @@ class UserLogin(View):
                 form.add_error("password", "Password incorrect!")
                 return render(request, "account/login.html", {"form": form})
         return render(request, "account/login.html", {"form": form})
+
+
+class UserProfileEdit(View):
+    """
+    View for users to modify their
+    profile info
+    """
+
+    def get(self, request):
+        if not request.user.is_authenticated:
+            return redirect("account:login")
+        form = UserProfileForm(instance=request.user)
+        return render(request, "account/user-profile-edit.html", {"form": form})
+
+    def post(self, request):
+        form = UserProfileForm(request.POST, files=request.FILES,
+                               instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.add_message(request, messages.SUCCESS, "Info modified successfully")
+            return redirect("account:user-profile")
+        return render(request, "account/user-profile-edit.html", {"form": form})
+
+
+
 
 
 

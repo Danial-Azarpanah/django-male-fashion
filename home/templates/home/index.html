@@ -81,7 +81,7 @@
                             {% if not request.user.is_authenticated %}
                                 <a href="{% url "account:login" %}">Sign in</a>
                             {% else %}
-                                <a href="#">Profile</a>
+                                <a href="{% url "account:user-profile" %}">Profile</a>
                             {% endif %}
                             <a href="#">FAQs</a>
                         </div>

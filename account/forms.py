@@ -75,6 +75,34 @@ class UserLoginForm(forms.Form):
             raise ValidationError("No such user available!", "user_not_found")
 
 
+class UserProfileForm(forms.ModelForm):
+    """
+    Form for user's profile panel
+    in which they can modify their info
+    """
+    full_name = forms.CharField(widget=forms.TextInput(attrs={"placeholder": "Full Name",
+                                                              "class": "email-input"}))
+    phone = forms.CharField(widget=forms.TextInput(attrs={"placeholder": "Phone Number",
+                                                          "class": "email-input"}))
+    email = forms.EmailField(required=False,
+                             widget=forms.EmailInput(attrs={"placeholder": "Email Address",
+                                                            "class": "email-input"}))
+    address = forms.CharField(required=False,
+                              widget=forms.Textarea(attrs={"placeholder": "Your address",
+                                                           "class": "comment-area w-100",
+                                                           'style': 'background-color: rgba(0, 0, 0, 0.05);'}))
+    bio = forms.CharField(required=False,
+                          widget=forms.Textarea(attrs={"placeholder": "Your Bio",
+                                                       "class": "comment-area w-100",
+                                                       'style': 'background-color: rgba(0, 0, 0, 0.05);'}))
+    Image = forms.ImageField(required=False, label="تصویر")
+
+    class Meta:
+        model = User
+        fields = ["full_name", "phone", "email",
+                  "address", "bio", "image"]
+
+
 class UserChangeForm(forms.ModelForm):
     """A form for updating users. Includes all the fields on
     the user, but replaces the password field with admin's

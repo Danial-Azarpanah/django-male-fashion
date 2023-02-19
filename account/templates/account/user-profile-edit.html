@@ -1,0 +1,124 @@
+{% load static %}
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="{% static "account/profile/components/bootstrap/bootstrap-rtl.min.css" %}">
+    <link rel="stylesheet" href="{% static "account/profile/components/owl-carousel/owl.carousel.min.css" %}">
+    <link rel="stylesheet" href="{% static "account/profile/css/style.css" %}">
+
+
+    <title> پنل کاربری</title>
+</head>
+
+<body background="{% static "img/background.jpg" %}">
+
+
+<main>
+
+    <section class="py-5">
+        <div class="container">
+            <div class="row d-flex justify-content-center">
+                <div class="col-sm-9 col-md-11 col-lg-10">
+                    <div class="user-panel custom-bg mb-5">
+                        {% for message in messages %}
+                            <div class="alert-success rounded"
+                                 style="padding: 5px">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                        {% for error in form.non_field_errors %}
+                            <div class="alert-danger rounded"
+                                 style="padding: 5px">
+                                {{ error }}
+                            </div>
+                        {% endfor %}
+                        <form class="user-panel-box" enctype="multipart/form-data" method="post">
+                            {% csrf_token %}
+
+                            <div class="user-panel-profile">
+                                {% if request.user.image %}
+                                    <img src="{{ request.user.image.url }}" alt="" class="profile-image"
+                                         onclick="changeProfile()">
+                                {% else %}
+                                    <img src="{% static "account/images/static-user.jpg" %}" alt=""
+                                         class="profile_image"
+                                         onclick="changeProfile()">
+                                {% endif %}
+                            </div>
+                            <div class="change-profile-btn">
+                                <button class="change-profile-btn" hidden>{{ form.image }}</button>
+                                <p class="bg-dark rounded-pill pl-3 pr-3"
+                                   style="color: white">
+                                    Click on photo to change your profile image
+                                </p>
+                            </div>
+                            <!-- item -->
+                            <div class="user-panel-field">
+                                <i class="fa fa-user"></i>
+                                {{ form.full_name }}
+                            </div>
+                            <!-- item -->
+                            <div class="user-panel-field">
+                                <i class="fa fa-envelope"></i>
+                                {{ form.email }}
+                            </div>
+                            <!-- item -->
+                            <div class="user-panel-field"
+                                 style="display: inline">
+                                <i class="fa fa-phone"></i>
+                                {{ form.phone }}
+                            </div>
+                            <!-- item -->
+                            <div class="text-center mt-2 mb-2 w-50">
+                                <a href=""
+                                   class="btn btn-secondary w-75"
+                                   style="border-radius: 10px">
+                                    Change Password
+                                </a>
+                            </div>
+                            <!-- item -->
+                            <div class="col-lg-6 mt-3">
+                                <i class=""></i>
+                                {{ form.address }}
+                            </div>
+                            <!-- item -->
+                            <div class="col-lg-6 mt-3">
+                                <i class=""></i>
+                                {{ form.bio }}
+                            </div>
+
+                            <div class="col-lg-12 d-flex justify-content-center mt-3 ">
+                                <button type="submit" class="btn custom-btn w-50">Submit</button>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"></script>
+<script src="{% static "account/profile/components/bootstrap/bootstrap.bundle.js" %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
+        integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN"
+        crossorigin="anonymous"></script>
+<script src="{% static "account/profile/components/owl-carousel/owl.carousel.min.js" %}"></script>
+<script src="{% static "account/profile/js/script.js" %}"></script>
+<script>
+    function changeProfile() {
+        document.getElementById("id_image").click()
+    }
+</script>
+</body>
+
+</html>
