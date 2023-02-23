@@ -36,6 +36,12 @@
                                 {{ error }}
                             </div>
                         {% endfor %}
+                        {% if form.email.errors %}
+                            <div class="alert-danger rounded"
+                                 style="padding: 5px">
+                                {{ form.email.errors }}
+                            </div>
+                        {% endif %}
                         <form class="user-panel-box" enctype="multipart/form-data" method="post">
                             {% csrf_token %}
 
@@ -51,10 +57,9 @@
                             </div>
                             <div class="change-profile-btn">
                                 <button class="change-profile-btn" hidden>{{ form.image }}</button>
-                                <p class="bg-dark rounded-pill pl-3 pr-3"
-                                   style="color: white">
-                                    Click on photo to change your profile image
-                                </p>
+                                <div class="change-profile-btn">
+                                    <a class="btn custom-btn" href="">Change Password</a>
+                                </div>
                             </div>
                             <!-- item -->
                             <div class="user-panel-field">
@@ -67,19 +72,17 @@
                                 {{ form.email }}
                             </div>
                             <!-- item -->
-                            <div class="user-panel-field"
+                            <div class="user-panel-field" hidden
                                  style="display: inline">
                                 <i class="fa fa-phone"></i>
                                 {{ form.phone }}
                             </div>
-                            <!-- item -->
-                            <div class="text-center mt-2 mb-2 w-50">
-                                <a href=""
-                                   class="btn btn-secondary w-75"
-                                   style="border-radius: 10px">
-                                    Change Password
-                                </a>
+                            <div class="user-panel-field"
+                                 style="height: 44px">
+                                <i class="fa fa-envelope"></i>
+                                {{ request.user.phone }}
                             </div>
+                            <div class="col-lg-6"></div>
                             <!-- item -->
                             <div class="col-lg-6 mt-3">
                                 <i class=""></i>

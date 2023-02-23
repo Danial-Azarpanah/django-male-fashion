@@ -1,7 +1,7 @@
-from django.contrib.auth.forms import ReadOnlyPasswordHashField
-from django.core.validators import ValidationError
-from django.db.models import Q
 from django import forms
+from django.db.models import Q
+from django.core.validators import ValidationError
+from django.contrib.auth.forms import ReadOnlyPasswordHashField
 
 from .models import User
 
@@ -101,6 +101,15 @@ class UserProfileForm(forms.ModelForm):
         model = User
         fields = ["full_name", "phone", "email",
                   "address", "bio", "image"]
+
+
+class CheckEmailOtpForm(forms.Form):
+    """
+    Form for entering the code
+    received by user
+    """
+    code = forms.CharField(max_length=6,
+                           widget=forms.TextInput(attrs={"placeholder": "Enter 6 digit code"}))
 
 
 class UserChangeForm(forms.ModelForm):

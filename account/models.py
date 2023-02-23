@@ -1,6 +1,6 @@
-from django.contrib.auth.models import AbstractBaseUser
-from django.utils import timezone
 from django.db import models
+from django.utils import timezone
+from django.contrib.auth.models import AbstractBaseUser
 
 from .managers import UserManager
 
@@ -58,7 +58,7 @@ class User(AbstractBaseUser):
         return True
 
 
-class OTP(models.Model):
+class Otp(models.Model):
     """
     Form for saving temporary user info
     for creating his/her account after
@@ -77,6 +77,31 @@ class OTP(models.Model):
 
     def is_not_expired(self):
         # Check if the OTP code is still valid
+        if self.expiration >= timezone.localtime(timezone.now()):
+            return True
+        return False
+
+
+class EmailChangeOtp(models.Model):
+    """
+    Model to save temporary data
+    of the users who want to change their email
+    in profile section
+    """
+    phone = models.CharField(max_length=11)
+    old_email = models.CharField(max_length=100, blank=True, null=True)
+    new_email = models.CharField(max_length=100)
+    code = models.CharField(max_length=6)
+    token = models.CharField(max_length=300)
+    expiration = models.DateTimeField(
+        timezone.localtime(timezone.now()) + timezone.timedelta(minutes=10)
+    )
+
+    class Meta:
+        verbose_name = "email change otp code"
+
+    # Return True if the Otp code is not expired yet
+    def is_not_expired(self):
         if self.expiration >= timezone.localtime(timezone.now()):
             return True
         return False

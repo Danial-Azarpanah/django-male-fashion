@@ -1,9 +1,9 @@
-from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from django.contrib.auth.models import Group
 from django.contrib import admin
+from django.contrib.auth.models import Group
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
+from .models import User, Otp, EmailChangeOtp
 from .forms import UserRegisterForm, UserChangeForm
-from .models import User, OTP
 
 
 class UserAdmin(BaseUserAdmin):
@@ -33,5 +33,6 @@ class UserAdmin(BaseUserAdmin):
 
 
 admin.site.register(User, UserAdmin)
-admin.site.register(OTP)
+admin.site.register(Otp)
+admin.site.register(EmailChangeOtp)
 admin.site.unregister(Group)
