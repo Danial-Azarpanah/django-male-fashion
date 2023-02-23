@@ -1,31 +1,14 @@
+{% extends "profile/base.html" %}
 {% load static %}
-<html lang="en">
 
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <link rel="stylesheet" href="{% static "account/profile/components/bootstrap/bootstrap-rtl.min.css" %}">
-    <link rel="stylesheet" href="{% static "account/profile/components/owl-carousel/owl.carousel.min.css" %}">
-    <link rel="stylesheet" href="{% static "account/profile/css/style.css" %}">
-    <link rel="stylesheet" href="{% static "account/profile/css/font-awesome/css/font-awesome.min.css" %}"
-          referrerpolicy="no-referrer"/>
-
-
-    <title> مجله</title>
-</head>
-
-<body background="{% static "img/background.jpg" %}">
-
-<main>
+{% block main %}
     <section class="py-5">
         <div class="container">
             <div class="row d-flex justify-content-center">
                 <div class="col-sm-9 col-md-7 col-lg-5">
                     <div class="custom-bg p-2">
 
-                        <div class="my-3 text-center">Code is sent to your email!</div>
+                        <div class="my-3 text-center">Code is sent to your email</div>
                         {{ form.code.errors }}
                         <form class="" method="post">
                             {% csrf_token %}
@@ -45,21 +28,4 @@
             </div>
         </div>
     </section>
-
-</main>
-
-<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"
-        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
-        crossorigin="anonymous"></script>
-<script src="{% static "account/profile/components/bootstrap/bootstrap.bundle.js" %}"></script>
-<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
-        integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN"
-        crossorigin="anonymous"></script>
-<script src="{% static "account/profile/components/owl-carousel/owl.carousel.min.js" %}"></script>
-<script src="{% static "account/profile/js/script.js" %}"></script>
-<script>
-
-</script>
-</body>
-
-</html>
+{% endblock %}
