@@ -1,0 +1,58 @@
+{% extends "account/base.html" %}
+{% load static %}
+
+{% block main %}
+    <div class="limiter">
+        <div class="container-login100">
+            <div class="wrap-login100">
+                <form class="login100-form validate-form p-l-55 p-r-55 p-t-178" method="post">
+
+                    {% csrf_token %}
+                    <span class="login100-form-title">
+						Enter code
+					</span>
+
+                    {% for message in messages %}
+                        <div class="alert-danger m-b-6"
+                             style="padding: 5px; border-radius: 15px; padding: 8px">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+
+
+                    <div class="text-center m-t-1 m-b-1 alert-danger"
+                         style="border-radius: 12px">
+                        {{ form.code.errors }}
+                    </div>
+
+                    <div class="wrap-input100 validate-input m-b-16" data-validate="Please enter email">
+                        {{ form.code }}
+                        <span class="focus-input100"></span>
+                    </div>
+
+                    {% if form.non_field_errors %}
+                        {% for error in form.non_field_errors %}
+                            <div class="text-center m-t-1 m-b-1 alert-danger"
+                                 style="border-radius: 12px">
+                                {{ error }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <div class="text-right p-b-23">
+                        <a href="#" class="txt2 form-link">
+                        </a>
+                    </div>
+
+                    <div class="container-login100-form-btn m-b-47">
+                        <button class="login100-form-btn">
+                            Submit
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+

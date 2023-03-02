@@ -9,10 +9,11 @@ from django.contrib.auth import login
 from django.core.mail import EmailMessage
 from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
+from django.contrib.sites.shortcuts import get_current_site
 
 from .authentication import CustomBackend
-from .models import User, Otp, EmailChangeOtp
-from .forms import UserRegisterForm, UserLoginForm, CheckOtpForm, UserProfileForm, CheckEmailOtpForm
+from .models import User, Otp, ChangedUser
+from .forms import UserRegisterForm, UserLoginForm, CheckOtpForm, UserProfileForm
 
 
 class UserRegister(View):
@@ -132,99 +133,190 @@ class UserProfileEdit(View):
 
     def post(self, request):
         user = request.user
+        old_phone = user.phone
         old_email = user.email
         form = UserProfileForm(request.POST, files=request.FILES,
                                instance=request.user)
 
         if form.is_valid():
+
             cd = form.cleaned_data
+            new_phone = cd.get("phone")
             new_email = cd.get("email")
-            if new_email:
-                if new_email != old_email:
-                    # Check if the new email isn't already used
-                    if User.objects.filter(email=new_email).exists():
-                        form.add_error("email", "This email is already taken")
-                        return render(request, "account/user-profile-edit.html", {"form": form})
+            code = random.randint(100000, 999999)
+            expiration = timezone.localtime(timezone.now()) + timezone.timedelta(minutes=10)
+
+            changed_user = ChangedUser.objects.create(
+                user_id=user.id,
+                phone=new_phone,
+                email=new_email,
+                code=code,
+                expiration=expiration
+            )
+
+            # If user wants to change his/her email address
+            if new_email != old_email:
+                # Check whether new email isn't already taken
+                if User.objects.filter(email=new_email):
+                    form.add_error("email", "Email is already taken")
+                    return render(request, "account/user-profile-edit.html", {"form": form})
+
+                # Save the info except new email (needs authorization)
+                form.save()
+                user.email = old_email
+                user.phone = old_phone
+                user.save()
+
+                # Create token for email change
+                changed_user.phone_change_successfull = True
+                changed_user.email_token = uuid4().hex
+                changed_user.save()
+
+                # Send an email containing authorization link to user
+                current_site = get_current_site(self.request)  # to get the domain of the current site
+                mail_subject = 'Email change link sent!'
+                message = render_to_string('account/email-change-link.html', {
+                    'user': user,
+                    'url': str(current_site.domain)
+                           + reverse_lazy("account:change-email")
+                           + f"?token={changed_user.email_token}",
+                })
+                to_email = form.cleaned_data.get('email')
+                email = EmailMessage(
+                    mail_subject, message, to=[to_email]
+                )
+                email.send()
+
+                # Check if phone number is also going to be changed
+                if new_phone != old_phone:
+
+                    # Save the info except the new phone (needs authorization)
                     form.save()
-                    user.email = old_email
+                    user.phone = old_phone
                     user.save()
 
-                    # Create authentication factors
-                    token = uuid4().hex
-                    code = random.randint(100000, 999999)
+                    # Create token for phone change
+                    changed_user.phone_change_successfull = False
+                    changed_user.phone_token = uuid4().hex
+                    changed_user.save()
+
+                    # This line has to be converted to a messaging service
                     print(code)
-                    expiration = timezone.localtime(timezone.now()) + timezone.timedelta(minutes=10)
-
-                    # Create a temporary user whose email is bound to change
-                    EmailChangeOtp.objects.create(
-                        phone=request.user.phone,
-                        old_email=old_email,
-                        new_email=new_email,
-                        code=code,
-                        token=token,
-                        expiration=expiration,
-                    )
-
-                    # Send Otp code to the new email
-                    mail_subject = "Authentication code sent to your email!"
-                    message = render_to_string("account/change-email-code.html",
-                                               {"code": code})
-                    to_email = new_email
-                    email = EmailMessage(mail_subject, message, to=[to_email])
-                    email.send()
 
                     return redirect(
-                        reverse_lazy("account:check-email-otp") + f"?token={token}"
+                        reverse_lazy("account:change-phone") + f"?token={changed_user.phone_token}"
                     )
+                messages.add_message(request, messages.SUCCESS, f"Link is sent to {new_email}")
+                return render(request, "account/user-profile-edit.html", {"form": form})
+
+            # Check if only the phone is going to change (not email)
+            elif new_phone != old_phone:
+
+                # Save the info except the new phone (needs authorization)
+                form.save()
+                user.phone = old_phone
+                user.save()
+
+                # Create token for phone change
+                changed_user.email_change_successfull = True
+                changed_user.phone_token = uuid4().hex
+                changed_user.save()
+
+                # This line has to be converted to a messaging service
+                print(code)
+
+                return redirect(
+                    reverse_lazy("account:change-phone") + f"?token={changed_user.phone_token}"
+                )
+
+            # If neither email nor phone number are modified
+            else:
+                changed_user.delete()
                 form.save()
                 messages.add_message(request, messages.SUCCESS, "Info modified successfully")
-                return redirect("account:user-profile")
-            messages.add_message(request, messages.SUCCESS, "Info modified successfully")
-            return redirect("account:user-profile")
-
+                return render(request, "account/user-profile-edit.html", {"form": form})
         return render(request, "account/user-profile-edit.html", {"form": form})
 
 
-class CheckEmailOtp(View):
-
+class ChangePhone(View):
+    """
+    View for changing phone number
+    based on OTP code
+    """
     def get(self, request):
         if not request.user.is_authenticated:
             return redirect("home:main")
-        form = CheckEmailOtpForm
-        return render(request, "account/email-check-otp.html", {"form": form})
+        form = CheckOtpForm
+        return render(request, "account/check-changed-phone-otp.html", {"form": form})
 
     def post(self, request):
-        form = CheckEmailOtpForm(request.POST)
-
+        form = CheckOtpForm(request.POST)
         if form.is_valid():
             cd = form.cleaned_data
+            token = request.GET.get("token")
 
-            # Check to see if the code matches
+            # Try finding a user with matching token and code
             try:
-                unverified_user = EmailChangeOtp.objects.get(token=request.GET.get("token"),
-                                                             code=cd.get("code"))
+                changed_user = ChangedUser.objects.get(phone_token=token, code=cd.get("code"))
+            # Return error if not found
             except:
-                form.add_error("code", "The code is incorrect!")
-                return render(request, "account/email-check-otp.html", {"form": form})
+                messages.add_message(request, messages.ERROR, "Code is incorrect")
+                return redirect(
+                    reverse_lazy("account:change-phone") + f"?token={token}"
+                )
 
-            # If the OTP code is still valid (not expired)
-            if unverified_user.is_not_expired():
-                user = User.objects.get(phone=unverified_user.phone)
-                user.email = unverified_user.new_email
-                try:
-                    EmailChangeOtp.objects.filter(phone=request.user.phone).delete()
-                except:
-                    pass
+            # Check whether the code is expired
+            if changed_user.is_not_expired():
+                user = User.objects.get(id=changed_user.user_id)
+                user.phone = changed_user.phone
                 user.save()
-                # Delete the object created for OTP authentication
-                messages.add_message(request, messages.SUCCESS, "Info modified successfully")
-                return redirect("account:user-profile")
             else:
-                # If OTP code is expired, delete the object associated with it
-                try:
-                    EmailChangeOtp.objects.filter(phone=request.user.phone).delete()
-                except:
-                    pass
-                form.add_error("code", "Expired, Please try again!")
-                return render(request, "account/email-check-otp.html", {"form": form})
-        return render(request, "account/email-check-otp.html", {"form": form})
+                messages.add_message(request, messages.ERROR, "Expired! Please try again")
+                changed_user.delete()
+                return redirect("account:user-profile")
+
+            changed_user.phone_change_successfull = True
+            changed_user.save()
+
+            # If the fields that needed authorization are changed successfully, delete the changed_user object
+            if changed_user.phone_change_successfull and changed_user.email_change_successfull:
+                changed_user.delete()
+
+            messages.add_message(request, messages.SUCCESS, "Profile modified successfully")
+            return redirect("account:user-profile")
+
+        return redirect("home:main")
+
+
+class ChangeEmail(View):
+    """
+    View for changing email
+    based on a link sent to email
+    """
+
+    def get(self, request):
+        token = request.GET.get("token")
+
+        # Try to find a changed user with matching token
+        try:
+            changed_user = ChangedUser.objects.get(email_token=token)
+        except:
+            messages.add_message(request, messages.ERROR, "Some error occured! Please try again")
+            return redirect("account:user-profile")
+
+        if changed_user.is_not_expired():
+            user = User.objects.get(id=changed_user.user_id)
+            user.email = changed_user.email
+            user.save()
+        else:
+            messages.add_message(request, messages.ERROR, "Expired! Please try again")
+            changed_user.delete()
+            return redirect("account:user-profile")
+        form = UserProfileForm(instance=request.user)
+        form.email = user.email
+        changed_user.email_change_successfull = True
+        changed_user.save()
+        if changed_user.email_change_successfull and changed_user.phone_change_successfull:
+            changed_user.delete()
+        messages.add_message(request, messages.SUCCESS, "Profile modified successfully")
+        return redirect("account:user-profile")

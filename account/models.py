@@ -82,25 +82,27 @@ class Otp(models.Model):
         return False
 
 
-class EmailChangeOtp(models.Model):
+class ChangedUser(models.Model):
     """
     Model to save temporary data
-    of the users who want to change their email
-    in profile section
+    of the users who want to
+    modify their profile
     """
+    user_id = models.IntegerField(null=True, blank=True)
     phone = models.CharField(max_length=11)
-    old_email = models.CharField(max_length=100, blank=True, null=True)
-    new_email = models.CharField(max_length=100)
-    code = models.CharField(max_length=6)
-    token = models.CharField(max_length=300)
-    expiration = models.DateTimeField(
-        timezone.localtime(timezone.now()) + timezone.timedelta(minutes=10)
-    )
+    email = models.CharField(max_length=100)
+    code = models.CharField(max_length=6, null=True, blank=True)
+    phone_token = models.CharField(max_length=300, null=True, blank=True)
+    email_token = models.CharField(max_length=300, null=True, blank=True)
+    expiration = models.DateTimeField()
+    phone_change_successfull = models.BooleanField(default=False)
+    email_change_successfull = models.BooleanField(default=False)
 
     class Meta:
-        verbose_name = "email change otp code"
+        verbose_name = "changed user"
+        verbose_name_plural = "changed users"
 
-    # Return True if the Otp code is not expired yet
+    # Return True if not expired
     def is_not_expired(self):
         if self.expiration >= timezone.localtime(timezone.now()):
             return True

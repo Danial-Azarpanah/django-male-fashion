@@ -54,7 +54,7 @@ class CheckOtpForm(forms.Form):
     confirming the OTP code
     """
     code = forms.CharField(widget=forms.TextInput(attrs=
-                                                  {"placeholder": "Enter 6 digit code",
+                                                  {"placeholder": "Enter the code sent to your phone",
                                                    "class": "input100"}))
 
 
@@ -101,15 +101,6 @@ class UserProfileForm(forms.ModelForm):
         model = User
         fields = ["full_name", "phone", "email",
                   "address", "bio", "image"]
-
-
-class CheckEmailOtpForm(forms.Form):
-    """
-    Form for entering the code
-    received by user
-    """
-    code = forms.CharField(max_length=6,
-                           widget=forms.TextInput(attrs={"placeholder": "Enter 6 digit code"}))
 
 
 class UserChangeForm(forms.ModelForm):
