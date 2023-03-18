@@ -13,9 +13,9 @@ from django.contrib.sites.shortcuts import get_current_site
 
 from .authentication import CustomBackend
 from .models import User, Otp, ChangedUser, ResetPasswordOtp
-from .forms import UserRegisterForm, UserLoginForm, CheckOtpForm\
-    , UserProfileForm, PasswordResetPhoneForm, PasswordResetOtpForm\
-    , PasswordResetForm
+from .forms import UserRegisterForm, UserLoginForm, CheckOtpForm \
+    , UserProfileForm, PasswordResetPhoneForm, PasswordResetOtpForm \
+    , PasswordResetForm, ChangePasswordForm
 
 
 class UserRegister(View):
@@ -418,6 +418,35 @@ class PasswordReset(View):
             password_reset_user.delete()
             return redirect("account:password-reset-phone")
         return render(request, "account/reset-password.html", {"form": form})
+
+
+class ChangePasswordView(View):
+    """
+    View for the process of changing
+    the password (while being authenticated)
+    """
+
+    def get(self, request):
+        if not request.user.is_authenticated:
+            return redirect("account:login")
+        form = ChangePasswordForm
+        return render(request, "account/change-password.html", {"form": form})
+
+    def post(self, request):
+        form = ChangePasswordForm(request.POST)
+        if form.is_valid():
+            cd = form.cleaned_data
+            if request.user.check_password(cd.get("old_password")):
+                user = request.user
+                new_password = cd.get("new_password1")
+                user.set_password(new_password)
+                user.save()
+                login(request, user, backend="django.contrib.auth.backends.ModelBackend")
+                messages.add_message(request, messages.SUCCESS, "Password changed successfully")
+                return redirect("account:user-profile")
+            form.add_error("old_password", "You entered your current password wrong")
+            return render(request, "account/change-password.html", {"form": form})
+        return render(request, "account/change-password.html", {"form": form})
 
 
 

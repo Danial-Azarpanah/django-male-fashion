@@ -134,6 +134,26 @@ class PasswordResetForm(forms.Form):
             raise ValidationError("Passwords don't match", "password_mismatch")
 
 
+class ChangePasswordForm(forms.Form):
+    """
+    Form for changing password
+    (authenticated users)
+    """
+    old_password = forms.CharField(widget=forms.PasswordInput(attrs={"placeholder": "Current Password"}))
+    new_password1 = forms.CharField(widget=forms.PasswordInput(attrs={"placeholder": "New Password"}))
+    new_password2 = forms.CharField(widget=forms.PasswordInput(attrs={"placeholder": "Confirm New Password"}))
+
+    def clean(self):
+        cd = super().clean()
+
+        new_password1 = cd.get("new_password1")
+        new_password2 = cd.get("new_password2")
+        if len(new_password1) < 8:
+            raise ValidationError("New password should be at least 8 characters")
+        elif new_password1 != new_password2:
+            raise ValidationError("Passwords don't match")
+
+
 class UserChangeForm(forms.ModelForm):
     """A form for updating users. Includes all the fields on
     the user, but replaces the password field with admin's

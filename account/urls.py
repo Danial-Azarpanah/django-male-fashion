@@ -15,4 +15,5 @@ urlpatterns = [
     path("password-reset-phone/", views.PasswordResetPhone.as_view(), name="password-reset-phone"),
     path("password-reset-otp/", views.PasswordResetCheckOtp.as_view(), name="password-reset-otp"),
     path("password-reset/", views.PasswordReset.as_view(), name="password-reset"),
+    path("change-password/", views.ChangePasswordView.as_view(), name="change-password"),
 ]
