@@ -103,6 +103,37 @@ class UserProfileForm(forms.ModelForm):
                   "address", "bio", "image"]
 
 
+class PasswordResetPhoneForm(forms.Form):
+    phone = forms.CharField(widget=forms.TextInput(attrs={"placeholder": "Phone Number",
+                                                          "class": "input100"}))
+
+    def clean(self):
+        phone = self.cleaned_data.get("phone")
+        if not User.objects.filter(phone=phone).exists():
+            raise ValidationError("A user with this phone number doesn't exist")
+
+
+class PasswordResetOtpForm(forms.Form):
+    code = forms.CharField(widget=forms.TextInput(attrs={"placeholder": "Code",
+                                                         "class": "input100"}))
+
+
+class PasswordResetForm(forms.Form):
+    password1 = forms.CharField(widget=forms.PasswordInput(attrs={"placeholder": "Password",
+                                                                  "class": "input100"}))
+    password2 = forms.CharField(widget=forms.PasswordInput(attrs={"placeholder": "Retype Password",
+                                                                  "class": "input100"}))
+
+    def clean(self):
+        password1 = self.cleaned_data.get("password1")
+        password2 = self.cleaned_data.get("password2")
+
+        if len(password1) < 8:
+            raise ValidationError('Password length should be more than 8 characters', 'short_password')
+        if password1 != password2:
+            raise ValidationError("Passwords don't match", "password_mismatch")
+
+
 class UserChangeForm(forms.ModelForm):
     """A form for updating users. Includes all the fields on
     the user, but replaces the password field with admin's

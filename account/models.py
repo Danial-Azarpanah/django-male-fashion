@@ -107,3 +107,16 @@ class ChangedUser(models.Model):
         if self.expiration >= timezone.localtime(timezone.now()):
             return True
         return False
+
+
+class ResetPasswordOtp(models.Model):
+    phone = models.CharField(max_length=11)
+    token = models.CharField(max_length=100)
+    code = models.CharField(max_length=6)
+    expiration = models.DateTimeField()
+    phone_confirmed = models.BooleanField(default=False)
+
+    def is_not_expired(self):
+        if self.expiration >= timezone.localtime(timezone.now()):
+            return True
+        return False

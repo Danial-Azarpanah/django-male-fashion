@@ -1,0 +1,29 @@
+{% extends "profile/base.html" %}
+{% load static %}
+
+{% block title %}
+    بازیابی گذرواژه
+{% endblock %}
+
+{% block main %}
+    <main>
+        <section class="py-5 mb-5 mt-5">
+            <div class="container">
+                <div class="d-flex align-items-center justify-content-between m-b-30"
+                     style="padding: 30px; background-color: black; border-radius: 10px; margin-bottom: 30px">
+                    <h4 class="title-section">
+                        <p style="color: white">Return</p> <a href="{% url "home:main" %}">Home</a>
+                    </h4>
+                </div>
+                <div class="d-flex align-items-center justify-content-between mb-3"
+                     style="padding: 30px; background-color: black; border-radius: 10px; margin-bottom: 30px">
+                    <h2 class="title-section" style="color: white" dir="ltr">
+                        Just one more step
+                        <br>
+                        Click on the link sent to {{ email }} to Create your account
+                    </h2>
+                </div>
+            </div>
+        </section>
+    </main>
+{% endblock %}

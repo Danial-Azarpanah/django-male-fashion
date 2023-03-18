@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.models import Group
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
-from .models import User, Otp, ChangedUser
+from .models import User, Otp, ChangedUser, ResetPasswordOtp
 from .forms import UserRegisterForm, UserChangeForm
 
 
@@ -34,5 +34,6 @@ class UserAdmin(BaseUserAdmin):
 
 admin.site.register(User, UserAdmin)
 admin.site.register(Otp)
+admin.site.register(ResetPasswordOtp)
 admin.site.register(ChangedUser)
 admin.site.unregister(Group)
