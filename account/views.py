@@ -433,19 +433,16 @@ class ChangePasswordView(View):
         return render(request, "account/change-password.html", {"form": form})
 
     def post(self, request):
-        form = ChangePasswordForm(request.POST)
+        form = ChangePasswordForm(request.POST, request=request)
         if form.is_valid():
             cd = form.cleaned_data
-            if request.user.check_password(cd.get("old_password")):
-                user = request.user
-                new_password = cd.get("new_password1")
-                user.set_password(new_password)
-                user.save()
-                login(request, user, backend="django.contrib.auth.backends.ModelBackend")
-                messages.add_message(request, messages.SUCCESS, "Password changed successfully")
-                return redirect("account:user-profile")
-            form.add_error("old_password", "You entered your current password wrong")
-            return render(request, "account/change-password.html", {"form": form})
+            user = request.user
+            new_password = cd.get("new_password1")
+            user.set_password(new_password)
+            user.save()
+            login(request, user, backend="django.contrib.auth.backends.ModelBackend")
+            messages.add_message(request, messages.SUCCESS, "Password changed successfully")
+            return redirect("account:user-profile")
         return render(request, "account/change-password.html", {"form": form})
 
 

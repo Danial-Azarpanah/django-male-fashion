@@ -143,15 +143,25 @@ class ChangePasswordForm(forms.Form):
     new_password1 = forms.CharField(widget=forms.PasswordInput(attrs={"placeholder": "New Password"}))
     new_password2 = forms.CharField(widget=forms.PasswordInput(attrs={"placeholder": "Confirm New Password"}))
 
+    # For having access to request in form
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None)
+        super(ChangePasswordForm, self).__init__(*args, **kwargs)
+
     def clean(self):
         cd = super().clean()
+
+        # Check if the entered old password is right
+        old_password = cd.get("old_password")
+        if not self.request.user.check_password(old_password):
+            raise ValidationError("You entered your current password wrong!")
 
         new_password1 = cd.get("new_password1")
         new_password2 = cd.get("new_password2")
         if len(new_password1) < 8:
             raise ValidationError("New password should be at least 8 characters")
         elif new_password1 != new_password2:
-            raise ValidationError("Passwords don't match")
+            raise ValidationError("New Passwords don't match")
 
 
 class UserChangeForm(forms.ModelForm):
